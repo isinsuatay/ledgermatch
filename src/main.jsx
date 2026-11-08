@@ -5,7 +5,7 @@ import {
   ClipboardCheck, Copy, Fingerprint, Layers3, Link2, ListChecks, Plus, Radio, ShieldCheck, Wallet, X,
 } from 'lucide-react';
 import { createRequest, formatXlm, normalizeHash, requestFromHash, requestUrl, stroops } from './requests.js';
-import { buildPayment, fundAccount, getAccount, nativeBalance, submitPayment, verifyPayment } from './stellar.js';
+import { buildPayment, fundAccount, getAccount, nativeBalance, submitPayment, transactionHash, verifyPayment } from './stellar.js';
 import { assertWallet, connectWallet, disconnectWallet, signPayment } from './wallet.js';
 import { loadWorkspace, saveWorkspace, updateEntry } from './workspace.js';
 import './style.css';
@@ -77,7 +77,7 @@ function App() {
   function select(entry) {
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
     setWorkspace((current) => ({ ...current, selected: entry.request.memo }));
-    setHashInput(entry.pending?.hash || '');
+    setHashInput('');
     setCreating(false);
     setNotice(null);
   }
@@ -135,7 +135,7 @@ function App() {
     if (!sender) throw new Error('Fund your wallet with Testnet XLM before paying.');
     if (!recipient) throw new Error('The recipient account needs to be funded on Testnet first.');
     const transaction = buildPayment(sender, request);
-    const hash = transaction.hash().toString('hex');
+    const hash = transactionHash(transaction);
     const signed = await signPayment(transaction, wallet.address);
 
     const submission = { hash, expiresAt: Number(transaction.timeBounds.maxTime) * 1000 };
@@ -239,7 +239,7 @@ function App() {
 
         <section className="wallet-strip" aria-label="Connected wallet and balance">
           <div className="wallet-id"><span className="icon-tile"><Wallet size={20} /></span><div><b>{wallet ? short(wallet.address) : 'Wallet disconnected'}</b><small title={wallet?.address}>{wallet ? 'Freighter / Varial · Testnet' : 'Connect Freighter / Varial to send a payment'}</small></div></div>
-          <div className="wallet-balance"><small>AVAILABLE BALANCE</small><b>{wallet ? formatXlm(stroops(nativeBalance(wallet.account)) ?? 0n) : '—'} <span>XLM</span></b></div>
+          <div className="wallet-balance"><small>TESTNET BALANCE</small><b>{wallet ? formatXlm(stroops(nativeBalance(wallet.account)) ?? 0n) : '—'} <span>XLM</span></b></div>
           {wallet && <button className="btn quiet" disabled={!!busy} onClick={() => run(wallet.account ? 'Refreshing…' : 'Funding account…', async () => {
             await assertWallet(wallet.address);
             const account = await (wallet.account ? getAccount(wallet.address) : fundAccount(wallet.address));
@@ -310,7 +310,7 @@ function App() {
                 <div className="card-body">
                   {pending && <p className="field-hint pending"><Activity size={16} /> A submission is pending. Verify its hash before trying again.</p>}
                   <form className="verify-form" onSubmit={(event) => { event.preventDefault(); run('Checking the ledger…', verify); }}>
-                    <label>Transaction hash<input value={hashInput || pending?.hash || ''} onChange={(event) => setHashInput(event.target.value)} maxLength={64} spellCheck="false" placeholder="Paste a Testnet transaction hash" /></label>
+                    <label>Transaction hash<input value={hashInput} onChange={(event) => setHashInput(event.target.value)} maxLength={64} spellCheck="false" placeholder={pending?.hash || 'Paste a Testnet transaction hash'} /></label>
                     <button className="btn secondary" disabled={!!busy}>Verify <ArrowRight size={16} /></button>
                   </form>
                   {pending && <button className="text-button" disabled={!!busy} onClick={() => run('Checking submission expiry…', async () => {

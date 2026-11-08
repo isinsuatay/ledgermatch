@@ -61,9 +61,13 @@ export function buildPayment(account, request) {
     .build();
 }
 
+export function transactionHash(transaction) {
+  return Array.from(transaction.hash(), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 export async function submitPayment(signedXdr, expectedHash) {
   const envelope = TransactionBuilder.fromXDR(signedXdr, Networks.TESTNET);
-  if (envelope.hash().toString('hex') !== expectedHash || !envelope.signatures.length) {
+  if (transactionHash(envelope) !== expectedHash || !envelope.signatures.length) {
     throw new Error('The wallet returned an unexpected or unsigned transaction.');
   }
   return horizon('/transactions', { method: 'POST', body: new URLSearchParams({ tx: signedXdr }) });
