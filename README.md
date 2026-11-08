@@ -54,6 +54,24 @@ LedgerMatch is a Testnet prototype with browser-local state. A link can be paid 
 | Public source and live deployment | This repository and GitHub Pages |
 | Development history | Meaningful commits covering request, wallet, payment, UI, tests and deployment |
 
+## Testnet evidence
+
+A browser run used the Varial extension with an isolated Testnet wallet. It exercised wallet connection, Friendbot funding, payment signing, successful receipt verification, a reference mismatch, link sharing and wallet disconnect.
+
+[View the confirmed 24.75 XLM transaction](https://stellar.expert/explorer/testnet/tx/06103979a51cce837bccee22986209d8dfdea78af3542f1dffd6a60f73a3967a) · [Browser verification run](https://github.com/isinsuatay/ledgermatch/actions/runs/42500843848)
+
+### Connected wallet and Testnet XLM balance
+
+![LedgerMatch showing the connected Freighter / Varial wallet and a balance of 10,000 Testnet XLM](docs/screenshots/wallet-connected.png)
+
+### Successful payment and matched ledger receipt
+
+![LedgerMatch showing a successful 24.75 XLM payment, updated balance, transaction hash and four passed receipt checks](docs/screenshots/payment-matched.png)
+
+### Same recipient and amount, different reference
+
+![LedgerMatch showing a failed memo check when the same transaction hash is verified against a different request](docs/screenshots/reference-mismatch.png)
+
 ## References
 
 - [Varial extension integration](https://github.com/stellar/freighter-developer-docs/blob/main/extension/installation.md)
